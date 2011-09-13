@@ -5,6 +5,7 @@ import sys
 import stat
 import shutil
 import codecs
+import hashlib
 from collections import defaultdict
 from cStringIO import StringIO
 from subprocess import Popen, PIPE
@@ -432,10 +433,10 @@ def _static_file(filename,
                           each)
                 else:
                     extension = os.path.splitext(filepath)[1]
-                each_m_times.append(os.stat(filepath)[stat.ST_MTIME])
                 new_file_content.write(open(filepath, 'r').read().strip())
                 new_file_content.write('\n')
-
+                each_m_times.append(hashlib.md5(new_file_content.getvalue()).hexdigest()[:5])
+                
             filename = _combine_filenames(filename)
             # Set the root path of the combined files to the first entry
             # in the MEDIA_ROOTS list. This way django-static behaves a
@@ -455,7 +456,7 @@ def _static_file(filename,
                                          filepath=filepath,
                                          notfound=True))
 
-            new_m_time = os.stat(filepath)[stat.ST_MTIME]
+            new_m_time = hashlib.md5(open(filepath, 'rb').read()).hexdigest()[:5]
 
         if m_time:
             # we had the filename in the map
@@ -507,7 +508,7 @@ def _static_file(filename,
         # Then we expect to be able to modify the content and we will
         # definitely need to write a new file.
         if is_combined_files:
-            content = new_file_content.getvalue().decode('utf-8')
+            content = new_file_content.getvalue()
         else:
             #content = open(filepath).read()
             content = codecs.open(filepath, 'r', 'utf-8').read()

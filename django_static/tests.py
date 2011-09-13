@@ -245,7 +245,7 @@ class TestDjangoStatic(TestCase):
         template = Template(template_as_string)
         context = Context()
         rendered = template.render(context).strip()
-        regex = re.compile('/foo_jquery\.min\.\d+\.js')
+        regex = re.compile('/foo_jquery\.min\.\w+\.js')
         self.assertTrue(regex.findall(rendered))
         self.assertEqual(rendered.count('<script'), 1)
         self.assertEqual(rendered.count('</script>'), 1)
@@ -282,12 +282,12 @@ class TestDjangoStatic(TestCase):
         template = Template(template_as_string)
         context = Context()
         rendered = template.render(context).strip()
-        self.assertTrue(re.findall('img100\.\d+\.gif', rendered))
-        self.assertTrue(re.findall('img200\.\d+\.gif', rendered))
+        self.assertTrue(re.findall('img100\.\w+\.gif', rendered))
+        self.assertTrue(re.findall('img200\.\w+\.gif', rendered))
 
     def _assertProcessedFileExists(self, dir, org_name):
         head, tail = os.path.splitext(org_name)
-        filename_re = re.compile(r"^%s\.\d+\%s$" % (head, tail))
+        filename_re = re.compile(r"^%s\.\w+\%s$" % (head, tail))
         files = os.listdir(dir)
         match = [ f for f in files if filename_re.match(f) ]
         self.assertEqual(len(match), 1)
@@ -1248,7 +1248,7 @@ class TestDjangoStatic(TestCase):
                                              symlink_if_possible=False)
         # expect the result to be something like css/base.1273229589.css
         self.assertTrue(result.startswith('css/base.'))
-        self.assertTrue(re.findall('base\.\d+\.css', result))
+        self.assertTrue(re.findall('base\.\w+\.css', result))
 
 
     def test_slim_content(self):
@@ -1357,7 +1357,7 @@ class TestDjangoStatic(TestCase):
         context = Context()
         rendered = template.render(context).strip()
         self.assertTrue(
-          re.findall('<script src=\"/foo.\d+\.js\"></script>', rendered)
+          re.findall('<script src=\"/foo.\w+\.js\"></script>', rendered)
         )
 
 
@@ -1395,17 +1395,17 @@ class TestDjangoStatic(TestCase):
         template = Template(template_as_string)
         context = Context()
         rendered = template.render(context).strip()
-        self.assertTrue(re.findall('medis\.\d+\.css', rendered))
+        self.assertTrue(re.findall('medis\.\w+\.css', rendered))
 
         # open the file an expect that it did staticfile for the images
         # within
-        new_filename = re.findall('/medis\.\d+\.css', rendered)[0]
+        new_filename = re.findall('/medis\.\w+\.css', rendered)[0]
         new_filepath = os.path.join(settings.MEDIA_ROOT,
                                     os.path.basename(new_filename))
         content = open(new_filepath).read()
-        self.assertTrue(re.findall('/img1\.\d+\.gif', content))
-        self.assertTrue(re.findall('/img2\.\d+\.gif', content))
-        self.assertTrue(re.findall('/img3\.\d+\.gif', content))
+        self.assertTrue(re.findall('/img1\.\w+\.gif', content))
+        self.assertTrue(re.findall('/img2\.\w+\.gif', content))
+        self.assertTrue(re.findall('/img3\.\w+\.gif', content))
         self.assertTrue(re.findall('/img9\.gif', content))
 
     def test_shortcut_functions(self):
@@ -1433,10 +1433,10 @@ class TestDjangoStatic(TestCase):
         reload(sys.modules['django_static.templatetags.django_static'])
         from django_static.templatetags.django_static import slimfile, staticfile
         result = staticfile('/foo101.js')
-        self.assertTrue(re.findall('/foo101\.\d+\.js', result))
+        self.assertTrue(re.findall('/foo101\.\w+\.js', result))
 
         result = slimfile('/foo102.js')
-        self.assertTrue(re.findall('/foo102\.\d+\.js', result))
+        self.assertTrue(re.findall('/foo102\.\w+\.js', result))
         if slimmer is not None or cssmin is not None:
             # test the content
             new_filepath = os.path.join(settings.MEDIA_ROOT,
@@ -1750,41 +1750,41 @@ class TestDjangoStatic(TestCase):
         context = Context()
         rendered = template.render(context).strip()
 
-        self.assertTrue(re.findall('/css/foobar\.\d+.css', rendered))
+        self.assertTrue(re.findall('/css/foobar\.\w+.css', rendered))
         foobar_content = open(settings.MEDIA_ROOT + rendered).read()
         self.assertTrue(not foobar_content.count('\n'))
-        self.assertTrue(re.findall('@import "/css/one\.\d+\.css";', foobar_content))
+        self.assertTrue(re.findall('@import "/css/one\.\w+\.css";', foobar_content))
         # notice how we add the '/css/' path to this one!
         # it was '@import "two.css";' originally
-        self.assertTrue(re.findall('@import "/css/two\.\d+\.css";', foobar_content))
-        self.assertTrue(re.findall('@import url\(/css/deeper/three\.\d+\.css\);', foobar_content))
-        self.assertTrue(re.findall('@import url\(\'/css/four\.\d+\.css\'\);', foobar_content))
+        self.assertTrue(re.findall('@import "/css/two\.\w+\.css";', foobar_content))
+        self.assertTrue(re.findall('@import url\(/css/deeper/three\.\w+\.css\);', foobar_content))
+        self.assertTrue(re.findall('@import url\(\'/css/four\.\w+\.css\'\);', foobar_content))
 
         # now lets study the results of each of these files
-        filename_one = re.findall('one\.\d+\.css', foobar_content)[0]
-        filename_two = re.findall('two\.\d+\.css', foobar_content)[0]
-        filename_three = re.findall('three\.\d+\.css', foobar_content)[0]
-        filename_four = re.findall('four\.\d+\.css', foobar_content)[0]
+        filename_one = re.findall('one\.\w+\.css', foobar_content)[0]
+        filename_two = re.findall('two\.\w+\.css', foobar_content)[0]
+        filename_three = re.findall('three\.\w+\.css', foobar_content)[0]
+        filename_four = re.findall('four\.\w+\.css', foobar_content)[0]
 
         content_one = open(settings.MEDIA_ROOT + '/css/' + filename_one).read()
         self.assertTrue('COMMENT ONE' not in content_one)
-        self.assertTrue(re.findall('one\.\d+\.gif', content_one))
-        image_filename_one = re.findall('one\.\d+\.gif', content_one)[0]
+        self.assertTrue(re.findall('one\.\w+\.gif', content_one))
+        image_filename_one = re.findall('one\.\w+\.gif', content_one)[0]
 
         content_two = open(settings.MEDIA_ROOT + '/css/' + filename_two).read()
         self.assertTrue('COMMENT TWO' not in content_one)
-        self.assertTrue(re.findall('two\.\d+\.gif', content_two))
-        image_filename_two = re.findall('two\.\d+\.gif', content_two)[0]
+        self.assertTrue(re.findall('two\.\w+\.gif', content_two))
+        image_filename_two = re.findall('two\.\w+\.gif', content_two)[0]
 
         content_three = open(settings.MEDIA_ROOT + '/css/deeper/' + filename_three).read()
         self.assertTrue('COMMENT THREE' not in content_three)
-        self.assertTrue(re.findall('three\.\d+\.gif', content_three))
-        image_filename_three = re.findall('three\.\d+\.gif', content_three)[0]
+        self.assertTrue(re.findall('three\.\w+\.gif', content_three))
+        image_filename_three = re.findall('three\.\w+\.gif', content_three)[0]
 
         content_four = open(settings.MEDIA_ROOT + '/css/' + filename_four).read()
         self.assertTrue('COMMENT FOUR' not in content_four)
-        self.assertTrue(re.findall('four\.\d+\.gif', content_four))
-        image_filename_four = re.findall('four\.\d+\.gif', content_four)[0]
+        self.assertTrue(re.findall('four\.\w+\.gif', content_four))
+        image_filename_four = re.findall('four\.\w+\.gif', content_four)[0]
 
         # now check that these images were actually created
         self.assertTrue(image_filename_one in os.listdir(settings.MEDIA_ROOT + '/css'))
@@ -1853,42 +1853,42 @@ class TestDjangoStatic(TestCase):
         context = Context()
         rendered = template.render(context).strip()
 
-        self.assertTrue(re.findall('/infinity/css/foobar\.\d+.css', rendered))
+        self.assertTrue(re.findall('/infinity/css/foobar\.\w+.css', rendered))
         foobar_content = open(settings.MEDIA_ROOT + '/special' + \
           rendered.replace('/infinity','')).read()
         self.assertTrue(not foobar_content.count('\n'))
-        self.assertTrue(re.findall('@import "/infinity/css/one\.\d+\.css";', foobar_content))
+        self.assertTrue(re.findall('@import "/infinity/css/one\.\w+\.css";', foobar_content))
         # notice how we add the '/css/' path to this one!
         # it was '@import "two.css";' originally
-        self.assertTrue(re.findall('@import "/infinity/css/two\.\d+\.css";', foobar_content))
-        self.assertTrue(re.findall('@import url\(/infinity/css/deeper/three\.\d+\.css\);', foobar_content))
-        self.assertTrue(re.findall('@import url\(\'/infinity/css/four\.\d+\.css\'\);', foobar_content))
+        self.assertTrue(re.findall('@import "/infinity/css/two\.\w+\.css";', foobar_content))
+        self.assertTrue(re.findall('@import url\(/infinity/css/deeper/three\.\w+\.css\);', foobar_content))
+        self.assertTrue(re.findall('@import url\(\'/infinity/css/four\.\w+\.css\'\);', foobar_content))
 
         # now lets study the results of each of these files
-        filename_one = re.findall('one\.\d+\.css', foobar_content)[0]
-        filename_two = re.findall('two\.\d+\.css', foobar_content)[0]
-        filename_three = re.findall('three\.\d+\.css', foobar_content)[0]
-        filename_four = re.findall('four\.\d+\.css', foobar_content)[0]
+        filename_one = re.findall('one\.\w+\.css', foobar_content)[0]
+        filename_two = re.findall('two\.\w+\.css', foobar_content)[0]
+        filename_three = re.findall('three\.\w+\.css', foobar_content)[0]
+        filename_four = re.findall('four\.\w+\.css', foobar_content)[0]
 
         content_one = open(settings.MEDIA_ROOT + '/special/css/' + filename_one).read()
         self.assertTrue('COMMENT ONE' not in content_one)
-        self.assertTrue(re.findall('one\.\d+\.gif', content_one))
-        image_filename_one = re.findall('one\.\d+\.gif', content_one)[0]
+        self.assertTrue(re.findall('one\.\w+\.gif', content_one))
+        image_filename_one = re.findall('one\.\w+\.gif', content_one)[0]
 
         content_two = open(settings.MEDIA_ROOT + '/special/css/' + filename_two).read()
         self.assertTrue('COMMENT TWO' not in content_one)
-        self.assertTrue(re.findall('two\.\d+\.gif', content_two))
-        image_filename_two = re.findall('two\.\d+\.gif', content_two)[0]
+        self.assertTrue(re.findall('two\.\w+\.gif', content_two))
+        image_filename_two = re.findall('two\.\w+\.gif', content_two)[0]
 
         content_three = open(settings.MEDIA_ROOT + '/special/css/deeper/' + filename_three).read()
         self.assertTrue('COMMENT THREE' not in content_three)
-        self.assertTrue(re.findall('three\.\d+\.gif', content_three))
-        image_filename_three = re.findall('three\.\d+\.gif', content_three)[0]
+        self.assertTrue(re.findall('three\.\w+\.gif', content_three))
+        image_filename_three = re.findall('three\.\w+\.gif', content_three)[0]
 
         content_four = open(settings.MEDIA_ROOT + '/special/css/' + filename_four).read()
         self.assertTrue('COMMENT FOUR' not in content_four)
-        self.assertTrue(re.findall('four\.\d+\.gif', content_four))
-        image_filename_four = re.findall('four\.\d+\.gif', content_four)[0]
+        self.assertTrue(re.findall('four\.\w+\.gif', content_four))
+        image_filename_four = re.findall('four\.\w+\.gif', content_four)[0]
 
         # now check that these images were actually created
         self.assertTrue(image_filename_one in os.listdir(settings.MEDIA_ROOT + '/special/css'))
@@ -2067,7 +2067,7 @@ class TestDjangoStatic(TestCase):
 
         settings.DJANGO_STATIC = True
         rendered = template.render(context).strip()
-        self.assertTrue(re.findall("//cdn/foo\.\d+\.js", rendered))
+        self.assertTrue(re.findall("//cdn/foo\.\w+\.js", rendered))
 
         settings.DJANGO_STATIC = False
 
@@ -2088,7 +2088,7 @@ class TestDjangoStatic(TestCase):
         settings.DJANGO_STATIC = True
         rendered = template.render(context).strip()
         self.assertTrue(rendered.startswith(u'<script src="//cdn/bar.'))
-        self.assertTrue(re.findall("//cdn/bar\.\d+\.js", rendered))
+        self.assertTrue(re.findall("//cdn/bar\.\w+\.js", rendered))
 
         template_as_string = """{% load django_static %}
         {% slimall %}
@@ -2120,7 +2120,7 @@ class TestDjangoStatic(TestCase):
         context = Context()
         rendered = template.render(context).strip()
 
-        self.assertTrue(re.findall("//cdn/bar\.\d+\.css", rendered))
+        self.assertTrue(re.findall("//cdn/bar\.\w+\.css", rendered))
         self.assertTrue('media="screen"' not in rendered)
         self.assertTrue('type="text/css"' not in rendered)
 
@@ -2145,7 +2145,7 @@ class TestDjangoStatic(TestCase):
         template = Template(template_as_string)
         context = Context()
         rendered = template.render(context).strip()
-        self.assertTrue(re.findall("/test_A\.\d+\.js", rendered))
+        self.assertTrue(re.findall("/test_A\.\w+\.js", rendered))
         content = open(settings.MEDIA_ROOT + rendered).read()
         self.assertTrue(len(dummy_content) > len(content))
 
@@ -2164,7 +2164,7 @@ class TestDjangoStatic(TestCase):
         template = Template(template_as_string)
         context = Context()
         rendered = template.render(context).strip()
-        self.assertTrue(re.findall("/test_A\.\d+\.js", rendered))
+        self.assertTrue(re.findall("/test_A\.\w+\.js", rendered))
         content = open(settings.MEDIA_ROOT + rendered).read()
         self.assertTrue('ERROR' in content)
         self.assertTrue(content.count('/*') and content.count('*/'))
@@ -2186,7 +2186,7 @@ class TestDjangoStatic(TestCase):
         template = Template(template_as_string)
         context = Context()
         rendered = template.render(context).strip()
-        self.assertTrue(re.findall("/test_A\.\d+\.js", rendered))
+        self.assertTrue(re.findall("/test_A\.\w+\.js", rendered))
         content = open(settings.MEDIA_ROOT + rendered).read()
         self.assertTrue('ERROR' in content)
         self.assertTrue(content.count('/*') and content.count('*/'))
