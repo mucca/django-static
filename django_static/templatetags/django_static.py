@@ -435,14 +435,14 @@ def _static_file(filename,
                     extension = os.path.splitext(filepath)[1]
                 new_file_content.write(open(filepath, 'r').read().strip())
                 new_file_content.write('\n')
-                each_m_times.append(hashlib.md5(new_file_content.getvalue()).hexdigest()[:5])
+                each_m_times.append(hashlib.md5(new_file_content.getvalue()).hexdigest())
                 
             filename = _combine_filenames(filename)
             # Set the root path of the combined files to the first entry
             # in the MEDIA_ROOTS list. This way django-static behaves a
             # little more predictible.
             path = settings.DJANGO_STATIC_MEDIA_ROOTS[0]
-            new_m_time = max(each_m_times)
+            new_m_time = hashlib.md5(str(each_m_times)).hexdigest()
 
         else:
             filepath, path = _find_filepath_in_roots(filename)
@@ -456,7 +456,7 @@ def _static_file(filename,
                                          filepath=filepath,
                                          notfound=True))
 
-            new_m_time = hashlib.md5(open(filepath, 'rb').read()).hexdigest()[:5]
+            new_m_time = hashlib.md5(open(filepath, 'rb').read()).hexdigest()
 
         if m_time:
             # we had the filename in the map
