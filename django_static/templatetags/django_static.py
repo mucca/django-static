@@ -544,6 +544,7 @@ def _static_file(filename,
                                             symlink_if_possible=symlink_if_possible,
                                             optimize_if_possible=optimize_again,
                                             warn_no_file=settings.DEBUG and True or False)
+                print 'django-static-debug', match.group(), replace_with, new_filename
                 return match.group().replace(replace_with, new_filename)
 
             content = REFERRED_CSS_URLS_REGEX.sub(replacer, content)
