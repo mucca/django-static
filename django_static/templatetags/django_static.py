@@ -545,7 +545,8 @@ def _static_file(filename,
                                             optimize_if_possible=optimize_again,
                                             warn_no_file=settings.DEBUG and True or False)
                 if not match.group() or not replace_with or not new_filename:
-                    print 'django-static-debug', match.group(), replace_with, new_filename
+                    print 'django-static-debug', match.group(), replace_with, new_filename,
+                            symlink_if_possible, optimize_again
                 return match.group().replace(replace_with, new_filename)
 
             content = REFERRED_CSS_URLS_REGEX.sub(replacer, content)
